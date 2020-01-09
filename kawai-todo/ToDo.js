@@ -15,9 +15,10 @@ export default class ToDo extends Component{
         isCompleted: false
     };
     render() {
-        const { isCompleted } = this.state;
+        const { isCompleted, isEditing } = this.state;
         return (
             <View style = {styles.comtainer}>
+                <View style={styles.colum}>
                 <TouchableOpacity onPress={this._toggleComplete}>
                     <View
                         style={[
@@ -26,9 +27,40 @@ export default class ToDo extends Component{
                         ]}
                     />
                 </TouchableOpacity>
-                <Text style={styles.text}>Hello I'm a To Do</Text>
+                <Text 
+                style={[
+                    styles.text,
+                isCompleted ? styles.completedText : styles.uncompletedText
+                ]}
+                >
+                    Hello I'm a To Do
+                </Text>
+            </View>
+            {isEditing ? (
+                <View style={styles.actions}>
+                    <TouchableOpacity onPressOut={this._finishEditing}>
+                        <View style={styles.actionContainer}>
+                            <Text style={styles.actionText}>✅</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <View Style = {styles.actions}>
+                    <TouchableOpacity onPressOut={this._startEditing}>
+                        <View style={styles.actionContainer}>
+                            <Text style={styles.actionText}>✏️</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity>
+                        <View style={styles.actionContainer}>
+                            <Text style={styles.actionText}>❌</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            )}
             </View>
         );
+        
     }
     _toggleComplete = () => {
         this.setState(prevState => {
