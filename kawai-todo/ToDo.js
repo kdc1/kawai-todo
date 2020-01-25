@@ -7,18 +7,26 @@ import {
     Dimensions, 
     TextInput
 } from "react-native";
-
+import PropTypes from "prop-types";
 const {width, height } = Dimensions.get("window");
 
 export default class ToDo extends Component{
-    state = {
-        isEditing: false, 
-        isCompleted: false,
-        toDovalue: ""
+    constructor(props) {
+        super(props);
+        this.state = { isEditing: false, toDoValue: props.text };
+    }
+    static propTypes = {
+        text: PropTypes.string.isRequired,
+        isCompleted: PropTypes.bool.isRequired,
+        deleteToDo: PropTypes.func.isRequired,
+        id: PropTypes.string.isRequired,
+        uncompleteToDo: PropTypes.func.isRequired,
+        completeToDo: PropTypes.func.isRequired,
+        updateToDo: PropTypes.func.isRequired
     };
     render() {
-        const { isCompleted, isEditing, toDoValue } = this.state;
-        const { text } = this.props;
+        const { isEditing, toDoValue } = this.state;
+        const { text, id, deleteToDo, isCompleted } = this.props;
         return (
             <View style = {styles.comtainer}>
                 <View style={styles.colum}>
@@ -33,8 +41,8 @@ export default class ToDo extends Component{
                 {isEditing ? (
                     <TextInput
                         style={[
-                            styles.input,
                             styles.text,
+                            styles.input,
                             isCompleted ? styles.completedText : styles.uncompletedText
                         ]}
                         value = {toDoValue}
@@ -42,6 +50,7 @@ export default class ToDo extends Component{
                         onChangeText={this._controllInput}
                         returnKeyType={"done"}
                         onBlur={this._finishEditing}
+                        underlineColorAndroid={"transparent"}
                     />
                 ) : (
                     <Text 
@@ -70,7 +79,7 @@ export default class ToDo extends Component{
                             <Text style={styles.actionText}>✏️</Text>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPressOut={() => deleteToDo(id)}>
                         <View style={styles.actionContainer}>
                             <Text style={styles.actionText}>❌</Text>
                         </View>
@@ -82,17 +91,21 @@ export default class ToDo extends Component{
         
     }
     _toggleComplete = () => {
-        this.setState(prevState => {
-            return {
-                 isCompleted: !prevState.isCompleted
-            };
-        });
+        const { isCompleted, uncompleteToDo, completeToDo, id } = this.props;
+        if (isCompleted) {
+            uncompleteToDo(id);
+        }else{
+            completeToDo(id);
+        }
+        
     };
     _startEditing = () => {
-        const { text } = this.props;
-        this.setState({ isEditing: true, toDoValue: text });
+        this.setState({ isEditing: true });
     };
     _finishEditing = () => {
+        const { toDoValue } = this.state;
+        const { id, updateToDo } = this.props;
+        updateToDo(id, toDoValue);
         this.setState({
             isEditing: false
         });
@@ -139,7 +152,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         width: width / 2,
-        justifyContent: "space-between"
+        
     },
     actions: {
         flexDirection: "row"
@@ -149,8 +162,9 @@ const styles = StyleSheet.create({
         marginHorizontal: 10
     },
     input: {
-        marginVertical: 20,
-        width: width / 2
+        width: width / 2,
+        marginVertical: 15,
+        paddingBottom: 5
     }
 
 });
